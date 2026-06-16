@@ -1,1 +1,69 @@
+<!-- static/predictor.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Exoplanet Edge Detector</title>
+  <style>
+    body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .feature { margin: 15px 0; }
+    input { width: 100%; padding: 8px; margin-top: 5px; }
+    button { background: #4285f4; color: white; border: none; padding: 10px 15px; margin-top: 20px; }
+    #result { margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1> Exoplanet Detection (Edge)</h1>
+  
+  <div id="input-fields">
+    <!-- Dynamic inputs will appear here -->
+  </div>
 
+  <button onclick="predict()">Detect Exoplanet</button>
+  <div id="result"></div>
+
+  <!-- Add this script to your existing predict.html -->
+<script>
+  document.querySelector('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Collect all input values
+    const formData = {};
+    {% for feature in features %}
+      formData["{{ feature }}"] = parseFloat(document.getElementById("{{ feature }}").value) || 0;
+    {% endfor %}
+    
+    try {
+      // Send to Flask backend
+      const response = await fetch('/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      const result = await response.json();
+      
+      // Update UI dynamically
+      document.querySelector('.result h3').textContent = result.prediction;
+      document.querySelector('.probability').innerHTML = `
+        Probability: ❌ False Positive: ${(result.proba[0]*100).toFixed(2)}% |
+        ✅ Confirmed Exoplanet: ${(result.proba[1]*100).toFixed(2)}%
+      `;
+      
+      // Update chart
+      if(window.donutChart) {
+        donutChart.data.datasets[0].data = [
+          result.proba[0]*100, 
+          result.proba[1]*100
+        ];
+        donutChart.update();
+      }
+      
+    } catch (error) {
+      console.error("Prediction failed:", error);
+    }
+  });
+</script>
+</body>
+</html>
