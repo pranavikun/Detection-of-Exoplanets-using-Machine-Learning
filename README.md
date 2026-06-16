@@ -75,6 +75,16 @@ NASA Exoplanet Dataset
 
 ---
 
+## Pre-trained Models
+
+The repository includes:
+
+- exo_best_model.pkl
+- exo_scaler.pkl
+- exo_features.pkl
+
+These files allow users to run predictions immediately without retraining the model.
+
 ## Project Structure
 
 ```text
